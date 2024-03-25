@@ -125,7 +125,7 @@ if [ "$1" == "import" ]; then
     sudo -u renderer touch /data/database/planet-import-complete
 
     service postgresql stop
-
+    # sleep 1000000
     exit 0
 fi
 

@@ -61,6 +61,7 @@ RUN apt-get update \
   fonts-hanazono \
   fonts-noto-core \
   fonts-noto-cjk \
+  fonts-noto-cjk-extra \
   fonts-noto-color-emoji \
   fonts-noto-hinted \
   fonts-noto-unhinted \
@@ -149,7 +150,9 @@ RUN chmod +x /usr/bin/openstreetmap-tiles-update-expire.sh \
   && mkdir /var/log/tiles \
   && chmod a+rw /var/log/tiles \
   && ln -s /home/renderer/src/mod_tile/osmosis-db_replag /usr/bin/osmosis-db_replag \
-  && echo "* * * * *   renderer    openstreetmap-tiles-update-expire.sh\n" >> /etc/crontab
+  && echo "5 * * * *   renderer    openstreetmap-tiles-update-expire.sh\n" >> /etc/crontab
+
+# Every hour @ 5
 
 # Configure PosgtreSQL
 COPY postgresql.custom.conf.tmpl /etc/postgresql/$PG_VERSION/main/
@@ -180,14 +183,16 @@ RUN mkdir -p /run/renderd/ \
   &&  ln  -s  /data/tiles              /var/cache/renderd/tiles                \
   ;
 
-RUN echo '[default] \n\
-  HOST=localhost \n\
-  URI=/tile/ \n\
-  TILEDIR=/var/cache/renderd/tiles \n\
-  XML=/home/renderer/src/openstreetmap-carto/mapnik.xml \n\
-  TILESIZE=256 \n\
-  MAXZOOM=20' >> /etc/renderd.conf \
-  && sed -i 's,/usr/share/fonts/truetype,/usr/share/fonts,g' /etc/renderd.conf
+# RUN echo '[default] \n\
+#   HOST=localhost \n\
+#   URI=/tile/ \n\
+#   TILEDIR=/var/cache/renderd/tiles \n\
+#   XML=/home/renderer/src/openstreetmap-carto/mapnik.xml \n\
+#   TILESIZE=256 \n\
+#   MAXZOOM=20' >> /etc/renderd.conf \
+#   && sed -i 's,/usr/share/fonts/truetype,/usr/share/fonts,g' /etc/renderd.conf
+
+COPY etcRenderd.conf /etc/renderd.conf 
 
 # Install helper script
 COPY --from=compiler-helper-script /home/renderer/src/regional /home/renderer/src/regional

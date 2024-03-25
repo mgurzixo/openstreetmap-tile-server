@@ -23,9 +23,9 @@ testload:
 	-v /u2/pbf/luxembourg.poly:/data/region.poly \
 	-v /u2/data-test:/data/database/  \
 	-v /u2/tiles-test:/data/tiles-test/  \
-	-e UPDATES=disabled \
+	-e UPDATES=enabled \
 	-e "FLAT_NODES=disabled" \
-	-e THREADS=16 \
+	-e THREADS=32 \
 	-e "OSM2PGSQL_EXTRA_ARGS=-C 32000" \
 	-e AUTOVACUUM=off \
 	--shm-size="32g" \
@@ -40,8 +40,8 @@ testserve:
 	-v /u2/pbf/luxembourg.poly:/data/region.poly \
 	-v /u2/data-test:/data/database/  \
 	-v /u2/tiles-test:/data/tiles/  \
-	-e THREADS=16 \
-	-e UPDATES=disabled \
+	-e THREADS=32 \
+	-e UPDATES=enabled \
 	-e "FLAT_NODES=disabled" \
 	-e ALLOW_CORS=enabled \
 	--shm-size="32g" \
