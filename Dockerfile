@@ -150,7 +150,7 @@ RUN chmod +x /usr/bin/openstreetmap-tiles-update-expire.sh \
   && mkdir /var/log/tiles \
   && chmod a+rw /var/log/tiles \
   && ln -s /home/renderer/src/mod_tile/osmosis-db_replag /usr/bin/osmosis-db_replag \
-  && echo "5 * * * *   renderer    openstreetmap-tiles-update-expire.sh\n" >> /etc/crontab
+  && echo "* * * * *   renderer    openstreetmap-tiles-update-expire.sh\n" >> /etc/crontab
 
 # Every hour @ 5
 

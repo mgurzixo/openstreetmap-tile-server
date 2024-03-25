@@ -4,11 +4,6 @@ adjust TMP
 sh compile.sh
 cd $TMP/mod_tile_build; ctest
 
-s3Ninja
-mkdir /u2/s3Storage
-chown 2000:2000 /u2/s3Storage
-sh s3ninja.sh
-
 cf. https://www.linuxbabe.com/ubuntu/openstreetmap-tile-server-ubuntu-20-04-osm
 
 sudo touch /etc/sysctl.d/60-custom.conf
