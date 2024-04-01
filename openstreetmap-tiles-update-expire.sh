@@ -107,7 +107,8 @@ freelock()
 
 if [ $# -eq 1 ] ; then
     m_info "Initialising Osmosis replication system to $1"
-    rm -fr $WORKOSM_DIR
+    # rm -fr $WORKOSM_DIR No!
+    # TODO don't create configuration.txt if it exists
     mkdir -p $WORKOSM_DIR
     echo $OSMOSIS_BIN -v 5 --read-replication-interval-init workingDirectory=$WORKOSM_DIR  "$OSMOSISLOG"
     $OSMOSIS_BIN -v 5 --read-replication-interval-init workingDirectory=$WORKOSM_DIR 1>&2 2> "$OSMOSISLOG"

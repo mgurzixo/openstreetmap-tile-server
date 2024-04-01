@@ -130,8 +130,8 @@ RUN a2enconf renderd
 COPY apache.conf /etc/apache2/sites-available/000-default.conf
 RUN a2enmod ssl
 # For tests
-# RUN ln -sf /dev/stdout /var/log/apache2/access.log \
-  # && ln -sf /dev/stderr /var/log/apache2/error.log
+RUN ln -sf /dev/stdout /var/log/apache2/access.log \
+  && ln -sf /dev/stderr /var/log/apache2/error.log
 
 # leaflet
 COPY leaflet-demo.html /var/www/html/index.html

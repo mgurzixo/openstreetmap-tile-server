@@ -1,7 +1,8 @@
 .PHONY: modtile build testinit testload testserve
 
-TEST_DIR=/u2/test
-MOD_TILES=/u2/tmp/mod_tile_build/src
+TEST_DIR=/u/test
+WORLD_DIR=/u/world
+MOD_TILES=/u/tmp/mod_tile_build/src
 IMAGE=tsimage
 
 modtile:
@@ -19,6 +20,10 @@ testinit:
 	cd $(TEST_DIR); mkdir -p pbf
 	cd $(TEST_DIR)/pbf;wget https://download.geofabrik.de/europe/luxembourg-latest.osm.pbf
 	cd $(TEST_DIR)/pbf;wget https://download.geofabrik.de/europe/luxembourg.poly
+
+worldinit:
+	cd $(WORLD_DIR); mkdir -p pbf
+	cd $(WORLD_DIR)/pbf;wget -c http://planet.openstreetmap.org/pbf/planet-latest.osm.pbf
 
 testload:
 	sudo rm -fr $(TEST_DIR)/data
@@ -40,11 +45,30 @@ testload:
 		$(IMAGE) \
 		import
 
+worldload:
+	sudo rm -fr $(WORLD_DIR)/data
+	sudo rm -fr $(WORLD_DIR)/tiles
+	mkdir -p $(WORLD_DIR)/data
+	mkdir -p $(WORLD_DIR)/tiles
+	docker run  \
+		--name worldLoad \
+		-v $(WORLD_DIR)/pbf/planet-latest.osm.pbf:/data/region.osm.pbf  \
+		-v $(WORLD_DIR)/data:/data/database/  \
+		-v $(WORLD_DIR)/tiles:/data/tiles/  \
+		-e UPDATES=enabled \
+		-e "FLAT_NODES=enabled" \
+		-e THREADS=32 \
+		-e "OSM2PGSQL_EXTRA_ARGS=-C 32000" \
+		-e AUTOVACUUM=off \
+		--shm-size="32g" \
+		$(IMAGE) \
+		import
+
 testserve:
 	docker run  \
 		-p 8081:80 \
-		-p 5432:5432 \
-		--name testRun \
+		-p 15432:5432 \
+		--name testServe \
 		-v $(TEST_DIR)/pbf/luxembourg.poly:/data/region.poly \
 		-v $(TEST_DIR)/data:/data/database/  \
 		-v $(TEST_DIR)/tiles:/data/tiles/  \
@@ -55,6 +79,24 @@ testserve:
 		--shm-size="32g" \
 		-d $(IMAGE) \
 		run
+
+worldserve:
+	docker run  \
+		-p 8082:80 \
+		-p 25432:5432 \
+		--name worldServe \
+		-v $(WORLD_DIR)/data:/data/database/  \
+		-v /world/tiles:/data/tiles/  \
+		-e THREADS=16 \
+		-e UPDATES=enabled \
+		-e "FLAT_NODES=enabled" \
+		-e ALLOW_CORS=enabled \
+		--shm-size="32g" \
+		-d $(IMAGE) \
+		run
+
+worldcache:
+	render_list -a -n 16 -Z 14 
 
 testshell:
 	docker exec -it testRun bash
