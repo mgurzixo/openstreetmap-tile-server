@@ -4,6 +4,12 @@ set -euo pipefail
 
 function createPostgresConfig() {
   cp /etc/postgresql/$PG_VERSION/main/postgresql.custom.conf.tmpl /etc/postgresql/$PG_VERSION/main/conf.d/postgresql.custom.conf
+  if [ "$1" == "import" ]; then
+    cp /etc/postgresql/$PG_VERSION/main/postgresql.custom.conf.load /etc/postgresql/$PG_VERSION/main/conf.d/postgresql.custom.conf
+  fi
+    if [ "$1" == "run" ]; then
+    cp /etc/postgresql/$PG_VERSION/main/postgresql.custom.conf.serve /etc/postgresql/$PG_VERSION/main/conf.d/postgresql.custom.conf
+  fi
   sudo -u postgres echo "autovacuum = $AUTOVACUUM" >> /etc/postgresql/$PG_VERSION/main/conf.d/postgresql.custom.conf
   cat /etc/postgresql/$PG_VERSION/main/conf.d/postgresql.custom.conf
 }
@@ -50,7 +56,7 @@ if [ "$1" == "import" ]; then
     fi
 
     # Initialize PostgreSQL
-    createPostgresConfig
+    createPostgresConfig "$1"
     service postgresql start
     sudo -u postgres createuser renderer
     sudo -u postgres createdb -E UTF8 -O renderer gis
@@ -162,7 +168,7 @@ if [ "$1" == "run" ]; then
     fi
 
     # Initialize PostgreSQL and Apache
-    createPostgresConfig
+    createPostgresConfig "$1"
     service postgresql start
     service apache2 restart
     setPostgresPassword

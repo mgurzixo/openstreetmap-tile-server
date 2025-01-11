@@ -92,6 +92,7 @@ RUN apt-get update \
   file \
   sudo \
   vim \
+  libluajit-5.1 \
   python3-certbot-dns-cloudflare \
   && apt-get clean autoclean \
   && apt-get autoremove --yes \
@@ -149,23 +150,21 @@ COPY openstreetmap-tiles-update-expire.sh /usr/bin/
 RUN chmod +x /usr/bin/openstreetmap-tiles-update-expire.sh \
   && mkdir /var/log/tiles \
   && chmod a+rw /var/log/tiles \
-  && ln -s /home/renderer/src/mod_tile/osmosis-db_replag /usr/bin/osmosis-db_replag \
-  && echo "* * * * *   renderer    openstreetmap-tiles-update-expire.sh\n" >> /etc/crontab
+  && ln -s /home/renderer/src/mod_tile/osmosis-db_replag /usr/bin/osmosis-db_replag
 
-# Every hour @ 5
+# Update map everyday @ 02:05
+RUN echo "5 2 * * *   renderer    openstreetmap-tiles-update-expire.sh\n" >> /etc/crontab
 
 # Configure PosgtreSQL
 COPY postgresql.custom.conf.tmpl /etc/postgresql/$PG_VERSION/main/
+COPY postgresql.custom.conf.load /etc/postgresql/$PG_VERSION/main/
+COPY postgresql.custom.conf.serve /etc/postgresql/$PG_VERSION/main/
 RUN chown -R postgres:postgres /var/lib/postgresql \
   && chown postgres:postgres /etc/postgresql/$PG_VERSION/main/postgresql.custom.conf.tmpl \
+  /etc/postgresql/$PG_VERSION/main/postgresql.custom.conf.load \
+  /etc/postgresql/$PG_VERSION/main/postgresql.custom.conf.serve \
   && echo "host all all 0.0.0.0/0 scram-sha-256" >> /etc/postgresql/$PG_VERSION/main/pg_hba.conf \
   && echo "host all all ::/0 scram-sha-256" >> /etc/postgresql/$PG_VERSION/main/pg_hba.conf
-
-# Certbot
-#RUN mkdir /root/.secrets  && chmod 700 /root/.secrets
-#RUN mkdir /root/.secrets/certbot
-#COPY cloudflare.ini /root/.secrets/certbot/cloudflare.ini
-#RUN chmod 400 /root/.secrets/certbot/cloudflare.ini
 
 # Create volume directories
 RUN mkdir -p /run/renderd/ \
@@ -204,7 +203,10 @@ COPY renderd /usr/bin/renderd
 COPY render_expired /usr/bin/render_expired
 COPY render_list /usr/bin/render_list
 COPY render_speedtest /usr/bin/render_speedtest
-COPY mod_tile.so /usr/lib/apache2/modules/mod_tile.so
+COPY osm2pgsql /usr/bin/osm2pgsql
+COPY osm2pgsql-replication /usr/bin/osm2pgsql-replication
+COPY default.style /usr/share/osm2pgsql/default.style
+COPY empty.style /usr/share/osm2pgsql/empty.style
 
 # Start running
 COPY run.sh /
